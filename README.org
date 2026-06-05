@@ -2,16 +2,16 @@
 
 runbox.el patches Eglot  (and eventually other Emacs features) to transparently dispatch subprocesses through TRAMP while keeping buffers host-local. It is designed for use with the toolbox or distrobox TRAMP backends, and potentially with general-purpose container backends such as podman, provided the container bind-mounts the relevant files at the same paths as the host.
 
-### TODO
+*** TODO
 
-* Eshell
++ Eshell
 
-* Shell
++ Shell
 
-* Vterm?
++ Vterm?
 
-* Dape
++ Dape
 
-* Eat
++ Eat
 
-* Define activation custom variables
++ Define activation custom variables
