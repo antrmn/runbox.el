@@ -42,20 +42,20 @@ A cons of (METHOD . NAME), e.g. (\"toolbox\" . \"fedora-toolbox-44\")"
   :group 'runbox)
 
 (defun runbox--trampify (dir)
-  "Conditionally prepend DIR with a TRAMP prefix and open connection.
-Requires `runbox-container' to be set and DIR to be a local path
-contained in `runbox-bind-mount'. Returns `nil' otherwise.
-As a side-effect, this function opens connection to the related
-TRAMP backend if not done already."
-  (when (and (not (tramp-tramp-file-p dir))
-             (string-prefix-p (file-truename runbox-bind-mount)
-                              (file-truename dir))
-             runbox-container)
-    (let ((tramp-vec (make-tramp-file-name :method (car runbox-container)
-                                           :host (cdr runbox-container)))
-          (non-essential nil))
-      (tramp-maybe-open-connection tramp-vec)
-      (tramp-make-tramp-file-name tramp-vec dir))))
+  "Return DIR as a TRAMP path into the runbox container.
+Requires `runbox-container' to be set."
+  (let ((vec (make-tramp-file-name :method (car runbox-container)
+                                   :host   (cdr runbox-container)))
+        (non-essential nil))
+    (tramp-maybe-open-connection vec)
+    (tramp-make-tramp-file-name vec dir)))
+
+(defun runbox--under-bind-mount-p (&optional dir)
+  (let ((dir (or dir default-directory)))
+    (and runbox-container
+       runbox-bind-mount
+       (string-prefix-p (file-truename runbox-bind-mount)
+                        (file-truename dir)))))
 
 
 (defun runbox--around-eglot-guess-contact (orig &rest args)
@@ -64,8 +64,9 @@ Rebinds `default-directory' to a TRAMP path when applicable, and restores
 the local project in the returned contact to keep buffer association on the
 host side.  ARGS are passed to ORIG unchanged."
   (let* ((project (eglot--current-project))
-         (default-directory (or (runbox--trampify default-directory)
-                                default-directory))
+         (default-directory (if (runbox--under-bind-mount-p)
+                                (runbox--trampify default-directory)
+                              default-directory))
          (result (apply orig args)))
     (cons (car result)
           (cons project
@@ -82,7 +83,8 @@ process function, falling through unchanged if no TRAMP path is applicable."
   (cl-call-next-method
    server
    (if-let* ((process-fn (plist-get slots :process))
-             (tramp-dir (runbox--trampify default-directory)))
+             (tramp-dir (when (runbox--under-bind-mount-p)
+                          (runbox--trampify default-directory))))
        (plist-put slots :process
                   (lambda ()
                     (let ((default-directory tramp-dir))
