@@ -91,6 +91,15 @@ process function, falling through unchanged if no TRAMP path is applicable."
                       (funcall process-fn))))
      slots)))
 
+(defun runbox--maybe-trampify (path)
+  (if (and (runbox--under-bind-mount-p) ;; AKA "runbox enabled"
+           (not (file-remote-p path))
+           (not (runbox--under-bind-mount-p path)))
+      (runbox--trampify path)
+    path))
+
+(advice-add 'eglot-uri-to-path :filter-return #'runbox--maybe-trampify)
+
 ;; Compilation
 
 ;; TODO: what if compilation buffer shows paths that are exclusively from toolbx?
