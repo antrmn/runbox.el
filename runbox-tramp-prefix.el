@@ -84,7 +84,6 @@ the default value unless NO-DEFAULT is non-nil."
                                        (or null string)
                                        (or null boolean))
                             (or null string))))
-  (interactive)
   (let ((completion-no-auto-exit t))
     (completing-read
      (or prompt "TRAMP prefix: ")
