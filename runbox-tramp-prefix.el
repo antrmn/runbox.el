@@ -73,6 +73,8 @@ ACTIONs are delegated to `complete-with-action' over the candidate list."
                              string
                              pred))))
 
+;;todo add runbox-tramp-prefix-cape and runbox-tramp-prefix-read(from minibuffer)
+
 (defun runbox-read-tramp-prefix (&optional prompt default no-default)
   "Read a TRAMP prefix from the minibuffer.
 
