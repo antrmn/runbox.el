@@ -245,7 +245,7 @@ equivalent.  (Or run it, if it is itself a runbox command.)"
 ;;; Mode line (and menu) definition
 (defvar-keymap runbox-menu-map
   :name "Runbox"
-  :prefix t
+  :prefix 'runbox-menu-map
   :doc "General menu for Runbox.  By default used in `runbox-mode-line'."
   "<runbox-help>" '(menu-item "Help for this feature" runbox-help)
   "<separator>" '("--")
@@ -300,7 +300,7 @@ Defined at variable `%s'."
   "Use `char-displayable-on-frame-p' on Emacs 31+")
 
 (defvar-keymap runbox-auto-mode-line-map
-  :prefix t
+  :prefix 'runbox-auto-mode-line-map
   :doc "Map used for the `runbox-auto-mode-line' construct."
   "<mode-line> <mouse-1>" #'runbox-auto-mode-toggle-at-window
   "<mode-line> <mouse-2>" #'runbox-auto-describe-mode)
@@ -404,7 +404,7 @@ mouse-1: Runbox menu"
   "Help-echo string to use for the `runbox-environment-mode-line' construct.")
 
 (defvar-keymap runbox-environment-mode-line-map
-  :prefix t
+  :prefix 'runbox-environment-mode-line-map
   :doc "Map used for the `runbox-environment-mode-line' construct."
   "<mode-line> <mouse-1>" 'runbox-menu-map)
 
