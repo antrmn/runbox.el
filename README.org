@@ -56,9 +56,10 @@ To use runbox, =runbox-environment= must be set and =default-directory= (current
     + =customize-set-value= to set it buffer-locally
     + =customize-set-variable= to set it globally
     + =customize-dirlocals= or =project-customize-dirlocals= to set it scoped to a directory.
-        - May be unsafe as a file-local variable. See [[id:environment-safety][=Runbox-environment= as a safe file-local variable]].
+        - May be unsafe as a file-local variable. See section "[[id:environment-safety][Runbox-environment as a safe file-local variable]]".
 
-#vindex: runbox-bind-mount
+
+#+vindex: runbox-bind-mount
 - Constant: =runbox-bind-mount= ::
   Local host path bind-mounted into the routed environment.  Defaults to the host user's home directory. May be declared as a variable in the future.
 
@@ -71,7 +72,7 @@ When setting the environment ensure that your TRAMP method of choice is enabled.
 #+end_example
 
 
-When =runbox-environment= is correctly set and =default-directory= points to a valid path, an indicator in the mode-line is shown and runbox commands can be used. One such example is =runbox-shell= which runs =shell= in the context of the specified environment. Other commands are listed in [[id:runbox-commands][Runbox dispatcher commands/functions]].
+When =runbox-environment= is correctly set and =default-directory= points to a valid path, an indicator in the mode-line is shown and runbox commands can be used. One such example is =runbox-shell= which runs =shell= in the context of the specified environment. Other commands are listed in "[[id:runbox-commands][Runbox dispatcher commands/functions"]] section.
 
 
 *** Defining a leader key
@@ -92,7 +93,7 @@ Such is an example that sets =C-z= as a leader key and =C-x t= for shell:
 
 With the above example, issuing =C-z C-x t= will invoke the =runbox-shell= command.
 
-Please note: =runbox-any-command= only works for event from the top-level command event loop: doing `C-z M-x shell` won't work as regular `shell` command will be invoked.
+Please note: =runbox-any-command= only works for event from the top-level command event loop: doing =C-z M-x shell= won't work as regular =shell= command will be invoked.
 
 *** Enabling automatic command dispatch 
 
@@ -103,25 +104,40 @@ Instead of a leader key, you can modally choose to replace every issued command 
 - Minor mode: =runbox-auto-mode= ::
   when non-nil, replaces the issued commands with their runbox counterpart.
 
-  The replacement occurs only when =runbox-environment= is set and valid (See [[id:setting-environment][Setting the environment]])
+  The replacement occurs only when =runbox-environment= is set and valid (See [[id:setting-environment][Setting the environment]] section)
 
 #+findex: global-runbox-auto-mode
 #+vindex: global-runbox-auto-mode
 - Global minor mode: =global-runbox-auto-mode= ::
   
 
-Just like with the leader key approach explained before, this suffers of the same shortcomings: only the command issued from top-level command loop are replaced. Typing `M-x shell` will still open a regular local shell.
+Just like with the leader key approach explained before, this suffers of the same shortcomings: only the command issued from top-level command loop are replaced. Typing =M-x shell= will still open a regular local shell.
 
 *** Runbox dispatcher commands/functions
 :PROPERTIES:
 :id:       runbox-commands
 :END:
 
++ Command: =runbox-eglot= ::
++ Function: =runbox-eglot-ensure= :: 
++ Command: =runbox-compile= :: 
++ Command: =runbox-project-compile= :: 
++ Command: =runbox-shell= :: 
++ Command: =runbox-project-shell= :: 
++ Command: =runbox-shell-command= :: 
++ Command: =runbox-project-shell-command= ::
++ Command: =runbox-async-shell-command= :: 
++ Command: =runbox-project-async-shell-command= ::
++ Command: =runbox-eat= ::
+  Requires the [[https://github.com/kephale/emacs-eat][eat]] package to be installed
++ Command: =runbox-dape= ::
+  Requires the [[https://github.com/svaante/dape][dape]] package to be installed
+
 ** Customizing
 
 *** Customizing the mode-line
 
-By default a mode-line-construct is displayed in the =mode-line-misc-info= area when Runbox commands can be executed (see [[id:setting-environment][Setting the environment]]). Such mode-line construct's format is defined by the =runbox-mode-line= variable.
+By default a mode-line-construct is displayed in the =mode-line-misc-info= area when Runbox commands can be executed (see [[id:setting-environment][Setting the environment]] section). Such mode-line construct's format is defined by the =runbox-mode-line= variable.
 
 #+vindex: runbox-mode-line
 - User option: =runbox-mode-line= ::
@@ -135,7 +151,7 @@ This construct has many nested constructs that allow for granular customization.
 
 By default, the mode-line shows the currently set =runbox-environment=. As =runbox-environment= holds a =tramp-file-name= struct, evaluating a human readable string for it is necessary.
 
-#+variable runbox-environment-label-formatters
+#+vindex runbox-environment-label-formatters
 + User-option: =runbox-environment-label-formatters= ::
   Alist of =(PREDICATE-FN . FORMATTER-FN)=. Both are functions of one argument, a =tramp-file-name= vector.  The first entry whose =PREDICATE-FN= returns non-nil has its =FORMATTER-FN= called to produce the label.
 
@@ -159,15 +175,17 @@ By default, the mode-line shows the currently set =runbox-environment=. As =runb
 By default =runbox-environment= value is safe if it is nil, if it has a safe method according to =runbox-safe-methods= or if it is a safe =tramp-file-name= according to =runbox-environment-p-functions=.
 
 
-#+variable runbox-safe-methods
-+ User option: =runbox-safe-methods= '("toolbox" "distrobox") ::
+#+vindex runbox-safe-methods
++ User option: =runbox-safe-methods= ='("toolbox" "distrobox")= ::
   A list of string with TRAMP methods deemed safe if set as file-local.
 
-#+variable runbox-safe-environment-p-functions
+
+#+vindex runbox-safe-environment-p-functions
 + User option: =runbox-safe-environment-p-functions= ::
   A list of 1-arg functions that take a =tramp-file-name= struct as a parameter and return non-nil if it is safe if set in a file-local variable.
 
-#+functions runbox-environment-safe-p
+
+#+findex runbox-environment-safe-p
 + Function: =runbox-safe-environment-p environment=
   Returns non-nil if =environment= is safe if set in a file-local variable.
 
