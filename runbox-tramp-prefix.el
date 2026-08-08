@@ -125,8 +125,32 @@ If non valid, widget W with a set `:error' parameter is returned, nil otherwise.
 (defun runbox-tramp-prefix--prompt (_widget prompt default no-default)
   "Calls `runbox-read-tramp-prefix' for `runbox-tramp-prefix' widgets.
 
+Returns the dissected tramp prefix.
 Passes PROMPT, DEFAULT, NO-DEFAULT."
-  (runbox-read-tramp-prefix prompt default no-default))
+  (tramp-dissect-file-name
+   (runbox-read-tramp-prefix prompt default no-default)))
+
+;; Value-to-internal and value-to-external are kinda opaque to me.  copied
+;; verbatim from widget 'symbol and kept it symple
+(defun runbox-tramp-prefix--value-to-internal (_widget stored-val)
+  "Convert STORED-VAL to its displayed form for `runbox-tramp-prefix'."
+  (if (tramp-file-name-p stored-val)
+      (tramp-make-tramp-file-name stored-val)
+    stored-val))
+
+(defun runbox-tramp-prefix--value-to-external (_widget displayed-val)
+  "Convert DISPLAYED-VAL to its persisted form.  Used by `runbox-tramp-prefix'."
+  (if (tramp-tramp-file-p displayed-val)
+      (let ((vec (tramp-dissect-file-name displayed-val)))
+        ;; strip localname as it is ignored anyway
+        (setf (tramp-file-name-localname vec) nil))
+    displayed-val))
+
+(defun runbox-tramp-prefix--match (_widget val)
+  "Checks if VAL is of type `tramp-file-name'.
+
+Match predicate for `runbox-tramp-prefix'."
+  (tramp-file-name-p val))
 
 (defun runbox-tramp-prefix--action (&rest _)
   "Widget's `widget-field-activate' behavior.
@@ -161,26 +185,13 @@ Widget's external value (what's stored in the variable of type
   :tag "TRAMP Prefix"
   :value nil
   :format "%{%t%}: %v"
+  :validate #'runbox-tramp-prefix--validate
   :completions-function #'runbox-tramp-prefix--capf
   :prompt-value #'runbox-tramp-prefix--prompt
   :action #'runbox-tramp-prefix--action
   :create #'runbox-tramp-prefix--create
-  :value-to-internal
-  (lambda (_widget vec)
-    (if (tramp-file-name-p vec)
-        (tramp-make-tramp-file-name vec)
-      ""))
-  :value-to-external
-  (lambda (_widget string)
-    (if (string-empty-p string)
-        nil
-      (or (ignore-errors (tramp-dissect-file-name string))
-          (error "Invalid TRAMP prefix: %s" string))))
-  :match
-  (lambda (_widget vec)
-    (if vec
-        (tramp-file-name-p vec)
-      t)))
+  :value-to-internal #'runbox-tramp-prefix--value-to-internal
+  :value-to-external #'runbox-tramp-prefix--value-to-external)
 
 (provide 'runbox-tramp-prefix)
 ;;; runbox-tramp-prefix.el ends here
