@@ -151,9 +151,12 @@ This construct has many nested constructs that allow for granular customization.
 
 By default, the mode-line shows the currently set =runbox-environment=. As =runbox-environment= holds a =tramp-file-name= struct, evaluating a human readable string for it is necessary.
 
+
+
 #+vindex runbox-environment-label-formatters
 + User-option: =runbox-environment-label-formatters= ::
   Alist of =(PREDICATE-FN . FORMATTER-FN)=. Both are functions of one argument, a =tramp-file-name= vector.  The first entry whose =PREDICATE-FN= returns non-nil has its =FORMATTER-FN= called to produce the label.
+
 
 
 #+findex: runbox-environment-label
