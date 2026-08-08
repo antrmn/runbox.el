@@ -24,8 +24,13 @@
 
 ;;; Code:
 (require 'runbox)
-(require 'dape)
+(require 'dape nil 'noerror)
 
+(unless (featurep 'dape)
+  (error "Feature `runbox-dape' requires package `dape' to be installed"))
+
+
+(declare-function dape "dape")
 (defun runbox-dape (config &optional skip-compile)
   (interactive
    (progn

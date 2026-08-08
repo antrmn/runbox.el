@@ -23,9 +23,14 @@
 ;; 
 
 ;;; Code:
-(require 'eat)
+(require 'eat nil 'noerror)
 (require 'runbox)
 
+(unless (featurep 'eat)
+  (error "Feature `runbox-eat' requires package `eat' to be installed"))
+
+
+(declare-function eat "eat")
 (defun runbox-eat (&optional program arg)
   (interactive
    (progn
