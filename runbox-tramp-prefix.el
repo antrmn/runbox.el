@@ -190,7 +190,8 @@ Widget's external value (what's stored in the variable of type
   :action #'runbox-tramp-prefix--action
   :create #'runbox-tramp-prefix--create
   :value-to-internal #'runbox-tramp-prefix--value-to-internal
-  :value-to-external #'runbox-tramp-prefix--value-to-external)
+  :value-to-external #'runbox-tramp-prefix--value-to-external
+  :match #'runbox-tramp-prefix--match)
 
 (provide 'runbox-tramp-prefix)
 ;;; runbox-tramp-prefix.el ends here
