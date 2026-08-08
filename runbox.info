@@ -1,0 +1,351 @@
+This is runbox.info, produced by makeinfo version 7.2 from README.texi.
+
+INFO-DIR-SECTION Emacs
+START-INFO-DIR-ENTRY
+* Runbox: (runbox).     [Run] in Tool[Box].
+END-INFO-DIR-ENTRY
+
+
+File: runbox.info,  Node: Top,  Next: Rationale,  Up: (dir)
+
+Runbox.el - [Run] in Tool[Box]
+******************************
+
+Runbox provides TRAMP-redirected variants of common Emacs commands (e.g.
+‘runbox-shell’ for ‘shell’, ‘runbox-eglot’ for ‘eglot’) that spawn their
+subprocess in a different environment than the one implied by the
+current local buffer.
+
+   For example, it is possible to open a buffer for file
+‘/home/user/MyProject/main.c’ and issue a ‘compile’ command or spawn the
+Eglot LSP client as if it was a
+‘/toolbox:Fedora:/home/user/MyProject/main.c’ buffer whilst remaining on
+the non-remote buffer.
+
+     *Note:* This package is ALPHA stage software.  It has not been
+     tested thoroughly and bugs are likely to occur.
+
+   The main use case of this package is to transparently run LSP
+clients, shells, compilation commands, etc.  against binaries residing
+in Toolbox (https://containertoolbx.org/) containers while operating in
+a local buffer.  It generalizes to any TRAMP backend that operates
+similarly and has a 1:1 mapping with the host's home directory, such as
+the backend for Distrobox (https://distrobox.it/) or fphost
+(https://github.com/antrmn/tramp-flatpak-host) (which runs commands
+outside the Flatpak sandbox).
+
+* Menu:
+
+* Rationale::
+* Installation::
+* Usage::
+* Customizing::
+* Hacking::
+
+-- The Detailed Node Listing --
+
+Usage
+
+* Setting the environment::
+* Defining a leader key::
+* Enabling automatic command dispatch::
+* Runbox dispatcher commands/functions::
+
+Customizing
+
+* Customizing the mode-line::
+* Labeling Runbox environments::
+* Runbox-environment as a safe file-local variable::
+
+
+File: runbox.info,  Node: Rationale,  Next: Installation,  Prev: Top,  Up: Top
+
+1 Rationale
+***********
+
+Running binaries in containers is useful for users of immutable distros
+(e.g.  Fedora Silverblue) who cannot conveniently (or simply do not want
+to) install toolchains on their host system, and more generally for
+anyone wanting to declaratively define their project's build
+environment.
+
+   GNOME Builder (https://apps.gnome.org/Builder/) nails this, and is
+the target whose UX this package tries to mimic: it lets you define a
+per-project build environment, with compilation commands and LSP
+requests redirected to it, while git handling and spell checking stay on
+the host as "editor-coupled" tools.
+
+   Emacs provides TRAMP out-of-the-box, an incredibly versatile facility
+for transparently accessing remote environments including containers.
+However, its usage semantics fall short here: container files are
+treated as distinct from their host counterparts despite being the same
+file, forcing you to switch buffers or jump between ‘/foo.c’ and
+‘/toolbox:MyToolbox:/foo.c’.  Also, executable access is all-or-nothing,
+when visiting a container's buffers, every needed tool must be installed
+there
+
+
+File: runbox.info,  Node: Installation,  Next: Usage,  Prev: Rationale,  Up: Top
+
+2 Installation
+**************
+
+To install the package,
+
+     M-x package-vc-install https://github.com/antrmn/runbox.el.git
+
+   Emacs 30.1 or later is required.
+
+
+File: runbox.info,  Node: Usage,  Next: Customizing,  Prev: Installation,  Up: Top
+
+3 Usage
+*******
+
+* Menu:
+
+* Setting the environment::
+* Defining a leader key::
+* Enabling automatic command dispatch::
+* Runbox dispatcher commands/functions::
+
+
+File: runbox.info,  Node: Setting the environment,  Next: Defining a leader key,  Up: Usage
+
+3.1 Setting the environment
+===========================
+
+To use runbox, ‘runbox-environment’ must be set and ‘default-directory’
+(current directory) must be under ‘runbox-bind-mount’.
+
+ -- User Option: runbox-environment
+     the target environment for Runbox commands.
+
+     If set, it takes a ‘tramp-file-name’ struct as obtained by
+     ‘(tramp-dissect-file-name)’.  Its ‘localname’ slot is ignored.
+
+     It can be set interactively with a string provided input through
+     _Customize_ facilties:
+        • ‘customize-set-value’ to set it buffer-locally
+        • ‘customize-set-variable’ to set it globally
+        • ‘customize-dirlocals’ or ‘project-customize-dirlocals’ to set
+          it scoped to a directory.
+             • May be unsafe as a file-local variable.  See section
+               "*note Runbox-environment as a safe file-local variable:
+               Runbox-environment as a safe file-local variable.".
+
+Constant: ‘runbox-bind-mount’
+     Local host path bind-mounted into the routed environment.  Defaults
+     to the host user's home directory.  May be declared as a variable
+     in the future.
+
+   When setting the environment ensure that your TRAMP method of choice
+is enabled.  Toolbox is provided out of the box in Emacs 30, but it has
+to be manually enabled:
+
+     M-x tramp-enable-method toolbox
+
+   When ‘runbox-environment’ is correctly set and ‘default-directory’
+points to a valid path, an indicator in the mode-line is shown and
+runbox commands can be used.  One such example is ‘runbox-shell’ which
+runs ‘shell’ in the context of the specified environment.  Other
+commands are listed in "*note Runbox dispatcher commands/functions":
+Runbox dispatcher commands/functions. section.
+
+
+File: runbox.info,  Node: Defining a leader key,  Next: Enabling automatic command dispatch,  Prev: Setting the environment,  Up: Usage
+
+3.2 Defining a leader key
+=========================
+
+It is possible define a leader key so that any key sequence issued right
+after will spawn its associated runbox equivalent command, if any.  To
+do so, bind the desired key-sequence for the leader key to
+‘runbox-any-command’.
+
+ -- Command: runbox-any-command
+     Reads the next key sequence and runs the runbox-equivalent of the
+     command bound to it, if any.
+
+   Such is an example that sets ‘C-z’ as a leader key and ‘C-x t’ for
+shell:
+
+     (bind-keys ("C-z" . runbox-any-command)
+                ("C-x t" . shell))
+
+   With the above example, issuing ‘C-z C-x t’ will invoke the
+‘runbox-shell’ command.
+
+   Please note: ‘runbox-any-command’ only works for event from the
+top-level command event loop: doing ‘C-z M-x shell’ won't work as
+regular ‘shell’ command will be invoked.
+
+
+File: runbox.info,  Node: Enabling automatic command dispatch,  Next: Runbox dispatcher commands/functions,  Prev: Defining a leader key,  Up: Usage
+
+3.3 Enabling automatic command dispatch
+=======================================
+
+Instead of a leader key, you can modally choose to replace every issued
+command with their runbox counterparts, if any:
+
+Minor mode: ‘runbox-auto-mode’
+     when non-nil, replaces the issued commands with their runbox
+     counterpart.
+
+     The replacement occurs only when ‘runbox-environment’ is set and
+     valid (See *note Setting the environment: Setting the environment.
+     section)
+
+Global minor mode: ‘global-runbox-auto-mode’
+
+   Just like with the leader key approach explained before, this suffers
+of the same shortcomings: only the command issued from top-level command
+loop are replaced.  Typing ‘M-x shell’ will still open a regular local
+shell.
+
+
+File: runbox.info,  Node: Runbox dispatcher commands/functions,  Prev: Enabling automatic command dispatch,  Up: Usage
+
+3.4 Runbox dispatcher commands/functions
+========================================
+
+ -- Command: runbox-eglot
+ -- Function: runbox-eglot-ensure
+ -- Command: runbox-compile
+ -- Command: runbox-project-compile
+ -- Command: runbox-shell
+ -- Command: runbox-project-shell
+ -- Command: runbox-shell-command
+ -- Command: runbox-project-shell-command
+ -- Command: runbox-async-shell-command
+ -- Command: runbox-project-async-shell-command
+ -- Command: runbox-eat
+     Requires the eat (https://github.com/kephale/emacs-eat) package to
+     be installed
+
+ -- Command: runbox-dape
+     Requires the dape (https://github.com/svaante/dape) package to be
+     installed
+
+
+File: runbox.info,  Node: Customizing,  Next: Hacking,  Prev: Usage,  Up: Top
+
+4 Customizing
+*************
+
+* Menu:
+
+* Customizing the mode-line::
+* Labeling Runbox environments::
+* Runbox-environment as a safe file-local variable::
+
+
+File: runbox.info,  Node: Customizing the mode-line,  Next: Labeling Runbox environments,  Up: Customizing
+
+4.1 Customizing the mode-line
+=============================
+
+By default a mode-line-construct is displayed in the
+‘mode-line-misc-info’ area when Runbox commands can be executed (see
+*note Setting the environment: Setting the environment. section).  Such
+mode-line construct's format is defined by the ‘runbox-mode-line’
+variable.
+
+‘‘runbox-mode-line’’
+     Variable for the user facing mode-line construct for Runbox, to be
+     added in the mode-line.
+
+   This construct has many nested constructs that allow for granular
+customization.  Refer to its docstring.
+
+
+File: runbox.info,  Node: Labeling Runbox environments,  Next: Runbox-environment as a safe file-local variable,  Prev: Customizing the mode-line,  Up: Customizing
+
+4.2 Labeling Runbox environments
+================================
+
+By default, the mode-line shows the currently set ‘runbox-environment’.
+As ‘runbox-environment’ holds a ‘tramp-file-name’ struct, evaluating a
+human readable string for it is necessary.
+
+User-option: ‘runbox-environment-label-formatters’
+     Alist of ‘(PREDICATE-FN . FORMATTER-FN)’.  Both are functions of
+     one argument, a ‘tramp-file-name’ vector.  The first entry whose
+     ‘PREDICATE-FN’ returns non-nil has its ‘FORMATTER-FN’ called to
+     produce the label.
+
+ -- Function: runbox-environment-label environment
+     Return a string with a human readable name for environment.
+     Consults ‘runbox-environment-label-formatters’, as a fallback, it
+     returns a string constructed with ‘tramp-make-tramp-name’ minus its
+     localname and its leading ‘/’ and trailing ‘:’ (for example
+     ‘podman:Container’)
+
+ -- Function: runbox-environment-label-cached environment
+     Like ‘runbox-environment-label’, but result is cached by
+     ‘environment’'s identity.  Useful for hot loops and mode line
+     rendering.
+
+
+File: runbox.info,  Node: Runbox-environment as a safe file-local variable,  Prev: Labeling Runbox environments,  Up: Customizing
+
+4.3 ‘Runbox-environment’ as a safe file-local variable
+======================================================
+
+By default ‘runbox-environment’ value is safe if it is nil, if it has a
+safe method according to ‘runbox-safe-methods’ or if it is a safe
+‘tramp-file-name’ according to ‘runbox-environment-p-functions’.
+
+‘‘runbox-safe-methods’ ‘'("toolbox" "distrobox")’’
+     A list of string with TRAMP methods deemed safe if set as
+     file-local.
+
+‘‘runbox-safe-environment-p-functions’’
+     A list of 1-arg functions that take a ‘tramp-file-name’ struct as a
+     parameter and return non-nil if it is safe if set in a file-local
+     variable.
+
+   • Function: ‘runbox-safe-environment-p environment’ Returns non-nil
+     if ‘environment’ is safe if set in a file-local variable.
+
+
+File: runbox.info,  Node: Hacking,  Prev: Customizing,  Up: Top
+
+5 Hacking
+*********
+
+It is possible to define new runbox dispatcher commands, although a
+stable API for it is not yet defined.  Refer to the source code, as it
+is thoroughly documented.
+
+   The core dispatching logic comes from the ‘runbox-funcall’, a
+granular dispatching is done with the ‘runbox-with-routing’ macro.
+
+   A Runbox command shall call ‘runbox-assert’ in the directory it will
+work on, in both its body function and interactive form, to ensure
+correct state.
+
+
+Tag Table:
+Node: Top181
+Node: Rationale1842
+Node: Installation3059
+Node: Usage3305
+Node: Setting the environment3553
+Node: Defining a leader key5437
+Node: Enabling automatic command dispatch6447
+Node: Runbox dispatcher commands/functions7361
+Node: Customizing8141
+Node: Customizing the mode-line8377
+Node: Labeling Runbox environments9068
+Node: Runbox-environment as a safe file-local variable10389
+Node: Hacking11358
+
+End Tag Table
+
+
+Local Variables:
+coding: utf-8
+Info-documentlanguage: en
+End:
