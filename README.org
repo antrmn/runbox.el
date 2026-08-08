@@ -41,62 +41,149 @@ To install the package,
   M-x package-vc-install https://github.com/antrmn/runbox.el.git
 #+end_example
 
-* Usage
+Emacs 30.1 or later is required.
 
-To use runbox, =runbox-environment= must be set.
+* Usage
+** Setting the environment
+:PROPERTIES:
+:id:       setting-environment
+:END:
+
+
+To use runbox, =runbox-environment= must be set and =default-directory= (current directory) must be under =runbox-bind-mount=.
 
 #+vindex: runbox-environment
 - User Option: =runbox-environment= ::
-  the target environment for Runbox commands. If set, it takes a =tramp-file-name= struct as obtained by =(tramp-dissect-file-name)=.  Its =localname= slot is ignored.
+  the target environment for Runbox commands.
+
+  If set, it takes a =tramp-file-name= struct as obtained by =(tramp-dissect-file-name)=. Its =localname= slot is ignored.
+
   It can be set interactively with a string provided input through /Customize/ facilties:
     + =customize-set-value= to set it buffer-locally
     + =customize-set-variable= to set it globally
     + =customize-dirlocals= or =project-customize-dirlocals= to set it scoped to a directory.
+        - May be unsafe as a file-local variable. See [[id:environment-safety][=Runbox-environment= as a safe file-local variable]].
+
+#vindex: runbox-bind-mount
+- Constant: =runbox-bind-mount= ::
+  Local host path bind-mounted into the routed environment.  Defaults to the host user's home directory. May be declared as a variable in the future.
 
 
-Ensure that your TRAMP method of choice is enabled. Toolbox is provided out of the box in Emacs 30, but it has to be manually enabled:
+
+When setting the environment ensure that your TRAMP method of choice is enabled. Toolbox is provided out of the box in Emacs 30, but it has to be manually enabled:
 
 #+begin_example
   M-x tramp-enable-method toolbox
 #+end_example
 
-Once this is set against a local buffer, a mode-line construct is by default displayed that confirms that the runbox environment is correctly set. It is now possible to run the runbox commands, whose list is defined in [[*Runbox commands]]. 
+
+When =runbox-environment= is correctly set and =default-directory= points to a valid path, an indicator in the mode-line is shown and runbox commands can be used. One such example is =runbox-shell= which runs =shell= in the context of the specified environment. Other commands are listed in [[id:runbox-commands][Runbox dispatcher commands/functions]].
 
 
 ** Defining a leader key
 
-You can define a leader key so that any key sequence issued right after will spawn its associated runbox equivalent command, if any.
+It is possible define a leader key so that any key sequence issued right after will spawn its associated runbox equivalent command, if any. To do so, bind the desired key-sequence for the leader key to =runbox-any-command=.
 
-To define a leader key, bind its key sequence to the command `runbox-any-command` in your Emacs config:
+#+findex: runbox-any-command
+- Command: =runbox-any-command= ::
+  Reads the next key sequence and runs the runbox-equivalent of the command bound to it, if any.
+
+
+Such is an example that sets =C-z= as a leader key and =C-x t= for shell:
 
 #+begin_src emacs-lisp
-  ;; C-z is our leader key
-  (bind-keys (C-z . runbox-any-command))
+  (bind-keys ("C-z" . runbox-any-command)
+             ("C-x t" . shell))
 #+end_src
 
-If =C-z= is your Runbox leader key and `C-x t` is bound to `shell`, then issuing `C-z C-x t` will call the `runbox-shell` command.
+With the above example, issuing =C-z C-x t= will invoke the =runbox-shell= command.
 
-Mind you, this only works for keybinding and outer command event loop: `C-z M-x shell` won't work: regular `shell` command will be invoked.
+Please note: =runbox-any-command= only works for event from the top-level command event loop: doing `C-z M-x shell` won't work as regular `shell` command will be invoked.
 
 ** Enabling automatic command dispatch 
 
-Instead of a leader key, you can choose to enable `runbox-auto-mode`:
-
-+ minor mode: runbox-auto-mode
-+ global minor mode: global runbox-auto-mode
+Instead of a leader key, you can modally choose to replace every issued command with their  runbox counterparts, if any:
 
 
-When non-nil, the issued commands will be replaced by their runbox equivalent.
+#+findex: runbox-auto-mode
+- Minor mode: =runbox-auto-mode= ::
+  when non-nil, replaces the issued commands with their runbox counterpart.
+
+  The replacement occurs only when =runbox-environment= is set and valid (See [[id:setting-environment][Setting the environment]])
+
+#+findex: global-runbox-auto-mode
+#+vindex: global-runbox-auto-mode
+- Global minor mode: =global-runbox-auto-mode= ::
+  
 
 Just like with the leader key approach explained before, this suffers of the same shortcomings: only the command issued from top-level command loop are replaced. Typing `M-x shell` will still open a regular local shell.
 
-** List of runbox commands
+** Runbox dispatcher commands/functions
+:PROPERTIES:
+:id:       runbox-commands
+:END:
 
-.....
+* Customizing
+
+** Customizing the mode-line
+
+By default a mode-line-construct is displayed in the =mode-line-misc-info= area when Runbox commands can be executed (see [[id:setting-environment][Setting the environment]]). Such mode-line construct's format is defined by the =runbox-mode-line= variable.
+
+#+vindex: runbox-mode-line
+- User option: =runbox-mode-line= ::
+  Variable for the user facing mode-line construct for Runbox, to be added in the mode-line.
+
+
+This construct has many nested constructs that allow for granular customization. Refer to its docstring.
+
+
+** Labeling Runbox environments
+
+By default, the mode-line shows the currently set =runbox-environment=. As =runbox-environment= holds a =tramp-file-name= struct, evaluating a human readable string for it is necessary.
+
+#+variable runbox-environment-label-formatters
++ User-option: =runbox-environment-label-formatters= ::
+  Alist of =(PREDICATE-FN . FORMATTER-FN)=. Both are functions of one argument, a =tramp-file-name= vector.  The first entry whose =PREDICATE-FN= returns non-nil has its =FORMATTER-FN= called to produce the label.
+
+
+#+findex: runbox-environment-label
++ Function: =runbox-environment-label environment= ::
+  Return a string with a human readable name for environment.
+  Consults =runbox-environment-label-formatters=, as a fallback, it returns a string constructed with =tramp-make-tramp-name= minus its localname and its leading =/= and trailing =:= (for example =podman:Container=)
+
+
+#+findex: runbox-environment-label-cached
++ Function: =runbox-environment-label-cached environment= ::
+  Like =runbox-environment-label=, but result is cached by =environment='s identity. Useful for hot loops and mode line rendering.
+
+
+** =Runbox-environment= as a safe file-local variable
+:PROPERTIES:
+:id:       environment-safety
+:END:
+
+By default =runbox-environment= value is safe if it is nil, if it has a safe method according to =runbox-safe-methods= or if it is a safe =tramp-file-name= according to =runbox-environment-p-functions=.
+
+
+#+variable runbox-safe-methods
++ User option: =runbox-safe-methods= '("toolbox" "distrobox") ::
+  A list of string with TRAMP methods deemed safe if set as file-local.
+
+#+variable runbox-safe-environment-p-functions
++ User option: =runbox-safe-environment-p-functions= ::
+  A list of 1-arg functions that take a =tramp-file-name= struct as a parameter and return non-nil if it is safe if set in a file-local variable.
+
+#+functions runbox-environment-safe-p
++ Function: =runbox-safe-environment-p environment=
+  Returns non-nil if =environment= is safe if set in a file-local variable.
 
 * Hacking
 
-It is possible to define new runbox dispatcher commands, although a stable API for it is not yet defined. Refer to the source code, as it is thoroughly documented. The core dispatching logic comes from the `runbox-funcall`, the granular dispatching is done with the `runbox-with-routing` macro. A Runbox command shall call `runbox-assert` in the directory it will work on, in both its body function and interactive form.
+It is possible to define new runbox dispatcher commands, although a stable API for it is not yet defined. Refer to the source code, as it is thoroughly documented.
 
-* Runbox commands
-..
+The core dispatching logic comes from the =runbox-funcall=, a granular dispatching is done with the =runbox-with-routing= macro.
+
+A Runbox command shall call =runbox-assert= in the directory it will work on, in both its body function and interactive form, to ensure correct state.
+
+
+
