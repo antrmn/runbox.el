@@ -18,7 +18,7 @@ For example, it is possible to open a buffer for file =/home/user/MyProject/main
 The main use case of this package is to transparently run LSP clients, shells, compilation commands, etc. against binaries residing in [[https://containertoolbx.org/][Toolbox]] containers while operating in a local buffer. It generalizes to any TRAMP backend that operates similarly and has a 1:1 mapping with the host's home directory, such as the backend for [[https://distrobox.it/][Distrobox]] or [[https://github.com/antrmn/tramp-flatpak-host][fphost]] (which runs commands outside the Flatpak sandbox).
 
 
-* Rationale
+** Rationale
 Running binaries in containers is useful for users of immutable distros (e.g. Fedora Silverblue) who cannot conveniently (or simply do not want to) install toolchains on their host system, and more generally for anyone wanting to declaratively define their project's build environment.
 
 [[https://apps.gnome.org/Builder/][GNOME Builder]] nails this, and is the target whose UX this package tries to mimic: it lets you define a per-project build environment, with compilation commands and LSP requests redirected to it, while git handling and spell checking stay on the host as "editor-coupled" tools.
