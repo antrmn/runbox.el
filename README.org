@@ -1,5 +1,4 @@
-#+TITLE: Runbox
-#+SUBTITLE: [Run] in Tool[Box]
+#+TITLE: Runbox.el - [Run] in Tool[Box]
 #+AUTHOR: Antonio Romano
 #+TEXINFO_FILENAME: runbox.info
 #+TEXINFO_DIR_CATEGORY: Emacs
@@ -7,30 +6,25 @@
 #+TEXINFO_DIR_DESC: [Run] in Tool[Box]
 #+OPTIONS: toc:t
 
-Runbox provides TRAMP-redirected variants of common Emacs commands (e.g. =runbox-shell= for =shell=, =runbox-eglot= for =eglot=) that spawn their subprocess in a different environment than the one implied by the current buffer. Given a buffer working on a local directory, each variant spawns its subprocess under a TRAMP-prefixed version of that directory, leaving the originating buffer's default-directory untouched.
+Runbox provides TRAMP-redirected variants of common Emacs commands (e.g. =runbox-shell= for =shell=, =runbox-eglot= for =eglot=) that spawn their subprocess in a different environment than the one implied by the current local buffer.
 
-#+begin_export texinfo
-@cartouche
-@strong{Note:} This package is ALPHA stage software. It has
-not been tested thoroughly and bugs are likely to occur.
-@end cartouche
-#+end_export
-
-The main use case of this package is to transparently run LSP clients, shells, compilation commands, etc... against binaries residing in [[https://github.com/antrmn/tramp-flatpak-host][Toolbox]] containers whilst operating in local buffer. Although it tries to generalize the solution to accomodate any TRAMP backend which oparates like it and has an 1:1 mapping with the host's home directory (like the backend for [[https://distrobox.it/][Distrobox]] or [[https://github.com/antrmn/tramp-flatpak-host][fphost]], to run commands outside the Flatpak sandbox).
-
-The advantage in doing so is are:
-
-- No need to jump between =/foo.c= and =/toolbox:MyToolbox:/foo.c= editing buffer, which point to the same file but are seen by Emacs by different paths and projects.
-- Process spawning environment is not an *all or nothing deal*: some binaries are run from the host (VC, spell checkers), proejct specific toolchain are run from the Toolbox container. Still, no buffer switching needed.
+For example, it is possible to open a buffer for file =/home/user/MyProject/main.c= and issue a =compile= command or spawn the Eglot LSP client as if it was a =/toolbox:Fedora:/home/user/MyProject/main.c= buffer whilst remaining on the non-remote buffer.
 
 
-Running binaries in containers is useful for users using immutable distros (e.g Fedora Silverblue) who cannot conveniently (or simply do not want to) install toolchains on their host system. It is also useful in general for anyone wanting to declaratively define their project's build environment.
+#+begin_quote
+*Note:* This package is ALPHA stage software. It has not been tested thoroughly and bugs are likely to occur.
+#+end_quote
 
-[[https://apps.gnome.org/Builder/][GNOME Builder]] nails this, and is the target whose UX I tried to mimic when thinking of this package. It is possible to define a per-project build environment, and all compilation commands as well as LSP requests are redriected to it. The git handling as well as the spell checking still reside on the host as they are considered "editor coupled".
+The main use case of this package is to transparently run LSP clients, shells, compilation commands, etc. against binaries residing in [[https://containertoolbx.org/][Toolbox]] containers while operating in a local buffer. It generalizes to any TRAMP backend that operates similarly and has a 1:1 mapping with the host's home directory, such as the backend for [[https://distrobox.it/][Distrobox]] or [[https://github.com/antrmn/tramp-flatpak-host][fphost]] (which runs commands outside the Flatpak sandbox).
 
-Emacs provides TRAMP out-of-the-box, which is an incredibly versatile facility for transparently accessing remote environments including containers. However, its usage semantics kind of fall short when trying to access an environment such as a toolbox container: all the user files are treated as different, despite being the same as the host. Accessing the container is an all or nothing deal: you can only use the binaries in there,.
 
-This may benefit users of immutable operating systems who may not want to install toolchains on the host operating systems but keep them separated in containers. Runbox covers Toolbox, Distrobox and alike container solutions due to their ease of use, trivial and close to non-existent life-cycle management and 1:1 path mapping.
+* Rationale
+Running binaries in containers is useful for users of immutable distros (e.g. Fedora Silverblue) who cannot conveniently (or simply do not want to) install toolchains on their host system, and more generally for anyone wanting to declaratively define their project's build environment.
+
+[[https://apps.gnome.org/Builder/][GNOME Builder]] nails this, and is the target whose UX this package tries to mimic: it lets you define a per-project build environment, with compilation commands and LSP requests redirected to it, while git handling and spell checking stay on the host as "editor-coupled" tools.
+
+
+Emacs provides TRAMP out-of-the-box, an incredibly versatile facility for transparently accessing remote environments including containers. However, its usage semantics fall short here: container files are treated as distinct from their host counterparts despite being the same file, forcing you to switch buffers or jump between =/foo.c= and =/toolbox:MyToolbox:/foo.c=. Also, executable access is all-or-nothing, when visiting a container's buffers, every needed tool must be installed there
 
 
 * Installation
