@@ -3,7 +3,7 @@
 ;; Copyright (C) 2026  Antonio Romano
 
 ;; Author: Antonio Romano <cidra@posteo.it>
-;; Keywords: processes
+;; Keywords: processes, convenience
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
