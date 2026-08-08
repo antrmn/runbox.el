@@ -1,17 +1,111 @@
-#+TITLE: runbox.el - [Run] in Tool[Box] 
+#+TITLE: Runbox
+#+SUBTITLE: [Run] in Tool[Box]
+#+AUTHOR: Antonio Romano
+#+TEXINFO_FILENAME: runbox.info
+#+TEXINFO_DIR_CATEGORY: Emacs
+#+TEXINFO_DIR_TITLE: Runbox: (runbox).
+#+TEXINFO_DIR_DESC: [Run] in Tool[Box]
+#+OPTIONS: toc:t
 
-runbox.el patches Eglot  (and eventually other Emacs features) to transparently dispatch subprocesses through TRAMP while keeping buffers host-local. It is designed for use with the toolbox or distrobox TRAMP backends, and potentially with general-purpose container backends such as podman, provided the container bind-mounts the relevant files at the same paths as the host.
+Runbox provides TRAMP-redirected variants of common Emacs commands (e.g. =runbox-shell= for =shell=, =runbox-eglot= for =eglot=) that spawn their subprocess in a different environment than the one implied by the current buffer. Given a buffer working on a local directory, each variant spawns its subprocess under a TRAMP-prefixed version of that directory, leaving the originating buffer's default-directory untouched.
 
-*** TO-DO
+#+begin_export texinfo
+@cartouche
+@strong{Note:} This package is ALPHA stage software. It has
+not been tested thoroughly and bugs are likely to occur.
+@end cartouche
+#+end_export
 
-+ Eshell
+The main use case of this package is to transparently run LSP clients, shells, compilation commands, etc... against binaries residing in [[https://github.com/antrmn/tramp-flatpak-host][Toolbox]] containers whilst operating in local buffer. Although it tries to generalize the solution to accomodate any TRAMP backend which oparates like it and has an 1:1 mapping with the host's home directory (like the backend for [[https://distrobox.it/][Distrobox]] or [[https://github.com/antrmn/tramp-flatpak-host][fphost]], to run commands outside the Flatpak sandbox).
 
-+ Shell
+The advantage in doing so is are:
 
-+ Vterm?
+- No need to jump between =/foo.c= and =/toolbox:MyToolbox:/foo.c= editing buffer, which point to the same file but are seen by Emacs by different paths and projects.
+- Process spawning environment is not an *all or nothing deal*: some binaries are run from the host (VC, spell checkers), proejct specific toolchain are run from the Toolbox container. Still, no buffer switching needed.
 
-+ Dape
 
-+ Eat
+Running binaries in containers is useful for users using immutable distros (e.g Fedora Silverblue) who cannot conveniently (or simply do not want to) install toolchains on their host system. It is also useful in general for anyone wanting to declaratively define their project's build environment.
 
-+ Define activation custom variables
+[[https://apps.gnome.org/Builder/][GNOME Builder]] nails this, and is the target whose UX I tried to mimic when thinking of this package. It is possible to define a per-project build environment, and all compilation commands as well as LSP requests are redriected to it. The git handling as well as the spell checking still reside on the host as they are considered "editor coupled".
+
+Emacs provides TRAMP out-of-the-box, which is an incredibly versatile facility for transparently accessing remote environments including containers. However, its usage semantics kind of fall short when trying to access an environment such as a toolbox container: all the user files are treated as different, despite being the same as the host. Accessing the container is an all or nothing deal: you can only use the binaries in there,.
+
+This may benefit users of immutable operating systems who may not want to install toolchains on the host operating systems but keep them separated in containers. Runbox covers Toolbox, Distrobox and alike container solutions due to their ease of use, trivial and close to non-existent life-cycle management and 1:1 path mapping.
+
+
+* Installation
+
+To install the package, 
+
+#+begin_src
+  M-x package-vc-install https://github.com/antrmn/runbox.el.git
+#+end_src
+
+* Usage
+
+To use runbox, =runbox-environment= must be set.
+
+#+attr_texinfo: :options runbox-environment
+#+begin_defopt
+Wants a value of type `tramp-file-name` as obtained by the `tramp-dissect-file-name` function.
+#+end_defopt
+
+This can be either set globally, buffer-locally or dir-locally. Customization commands are advised to set this, as it allows string input and will provide `find-file` -like completion for TRAMP prefixes.
+
++ `customize-set-value` to set it buffer-locally
++ `customize-set-variable` to set it globally
++ `customize-dirlocals` or `project-customize-dirlocals` to customize it dir-locally.
+
+
+Once this is set against a local buffer, a mode-line construct is by default displayed that confirms that the runbox environment is correctly set. It is now possible to run the runbox commands, whose list is defined in **Runbox commands**. Running `runbox-compile` will run the `compile` command in the environment specified by `runbox-environment`
+
+
+Ensure that your TRAMP method of choice is enabled. Toolbox is provided out of the box in Emacs 30, but it has to be manually enabnled:
+
+#+begin_src
+  M-x tramp-enable-method toolbox
+#+end_src
+
+Example:
+
+#+begin_src
+  M-x customize-set-variable runbox-environment /toolbox:Fedora:
+#+end_src
+
+
+** Defining a leader key
+
+You can define a leader key so that any key sequence issued right after will spawn its associated runbox equivalent command, if any.
+
+To define a leader key, bind its key sequence to the command `runbox-any-command` in your Emacs config:
+
+#+begin_src emacs-lisp
+  ;; C-z is our leader key
+  (bind-keys (C-z . runbox-any-command))
+#+end_src
+
+If C-z is your Runbox leader key and `C-x t` is bound to `shell`, then issuing `C-z C-x t` will call the `runbox-shell` command.
+
+Mind you, this only works for keybinding and outer command event loop: `C-z M-x shell` won't work: regular `shell` command will be invoked.
+
+** Enabling automatic command dispatch 
+
+Instead of a leader key, you can choose to enable `runbox-auto-mode`:
+
++ minor mode: runbox-auto-mode
++ global minor mode: global runbox-auto-mode
+
+
+When non-nil, the issued commands will be replaced by their runbox equivalent.
+
+Just like with the leader key approach explained before, this suffers of the same shortcomings: only the command issued from top-level command loop are replaced. Typing `M-x shell` will still open a regular local shell.
+
+** List of runbox commands
+
+.....
+
+* Hacking
+
+It is possible to define new runbox dispatcher commands, although a stable API for it is not yet defined. Refer to the source code, as it is thoroughly documented. The core dispatching logic comes from the `runbox-funcall`, the granular dispatching is done with the `runbox-with-routing` macro. A Runbox command shall call `runbox-assert` in the directory it will work on, in both its body function and interactive form.
+
+
