@@ -60,7 +60,7 @@ Ensure that your TRAMP method of choice is enabled. Toolbox is provided out of t
   M-x tramp-enable-method toolbox
 #+end_example
 
-Once this is set against a local buffer, a mode-line construct is by default displayed that confirms that the runbox environment is correctly set. It is now possible to run the runbox commands, whose list is defined in [[Runbox commands]]. 
+Once this is set against a local buffer, a mode-line construct is by default displayed that confirms that the runbox environment is correctly set. It is now possible to run the runbox commands, whose list is defined in [[*Runbox commands]]. 
 
 
 ** Defining a leader key
