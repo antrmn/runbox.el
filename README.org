@@ -37,40 +37,30 @@ This may benefit users of immutable operating systems who may not want to instal
 
 To install the package, 
 
-#+begin_src
+#+begin_example
   M-x package-vc-install https://github.com/antrmn/runbox.el.git
-#+end_src
+#+end_example
 
 * Usage
 
 To use runbox, =runbox-environment= must be set.
 
-#+attr_texinfo: :options runbox-environment
-#+begin_defopt
-Wants a value of type `tramp-file-name` as obtained by the `tramp-dissect-file-name` function.
-#+end_defopt
-
-This can be either set globally, buffer-locally or dir-locally. Customization commands are advised to set this, as it allows string input and will provide `find-file` -like completion for TRAMP prefixes.
-
-+ `customize-set-value` to set it buffer-locally
-+ `customize-set-variable` to set it globally
-+ `customize-dirlocals` or `project-customize-dirlocals` to customize it dir-locally.
+#+vindex: runbox-environment
+- User Option: =runbox-environment= ::
+  the target environment for Runbox commands. If set, it takes a =tramp-file-name= struct as obtained by =(tramp-dissect-file-name)=.  Its =localname= slot is ignored.
+  It can be set interactively with a string provided input through /Customize/ facilties:
+    + =customize-set-value= to set it buffer-locally
+    + =customize-set-variable= to set it globally
+    + =customize-dirlocals= or =project-customize-dirlocals= to set it scoped to a directory.
 
 
-Once this is set against a local buffer, a mode-line construct is by default displayed that confirms that the runbox environment is correctly set. It is now possible to run the runbox commands, whose list is defined in **Runbox commands**. Running `runbox-compile` will run the `compile` command in the environment specified by `runbox-environment`
+Ensure that your TRAMP method of choice is enabled. Toolbox is provided out of the box in Emacs 30, but it has to be manually enabled:
 
-
-Ensure that your TRAMP method of choice is enabled. Toolbox is provided out of the box in Emacs 30, but it has to be manually enabnled:
-
-#+begin_src
+#+begin_example
   M-x tramp-enable-method toolbox
-#+end_src
+#+end_example
 
-Example:
-
-#+begin_src
-  M-x customize-set-variable runbox-environment /toolbox:Fedora:
-#+end_src
+Once this is set against a local buffer, a mode-line construct is by default displayed that confirms that the runbox environment is correctly set. It is now possible to run the runbox commands, whose list is defined in [[Runbox commands]]. 
 
 
 ** Defining a leader key
@@ -84,7 +74,7 @@ To define a leader key, bind its key sequence to the command `runbox-any-command
   (bind-keys (C-z . runbox-any-command))
 #+end_src
 
-If C-z is your Runbox leader key and `C-x t` is bound to `shell`, then issuing `C-z C-x t` will call the `runbox-shell` command.
+If =C-z= is your Runbox leader key and `C-x t` is bound to `shell`, then issuing `C-z C-x t` will call the `runbox-shell` command.
 
 Mind you, this only works for keybinding and outer command event loop: `C-z M-x shell` won't work: regular `shell` command will be invoked.
 
@@ -108,4 +98,5 @@ Just like with the leader key approach explained before, this suffers of the sam
 
 It is possible to define new runbox dispatcher commands, although a stable API for it is not yet defined. Refer to the source code, as it is thoroughly documented. The core dispatching logic comes from the `runbox-funcall`, the granular dispatching is done with the `runbox-with-routing` macro. A Runbox command shall call `runbox-assert` in the directory it will work on, in both its body function and interactive form.
 
-
+* Runbox commands
+..
