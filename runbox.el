@@ -3,6 +3,9 @@
 ;; Copyright (C) 2026  Antonio Romano
 
 ;; Author: Antonio Romano <cidra@posteo.it>
+;; URL: https://github.com/antrmn/runbox.el
+;; Version: 0.0.1
+;; Package-Requires: ((emacs "30.1"))
 ;; Keywords: processes, convenience
 
 ;; This program is free software; you can redistribute it and/or modify
