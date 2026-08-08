@@ -149,7 +149,7 @@ runbox-tramp-prefix widgets, if not already there."
   (add-hook 'completion-at-point-functions
             #'runbox-tramp-prefix--capf -72 t))
 
-(define-widget 'runbox-tramp-prefix 'string
+(define-widget 'runbox-tramp-prefix 'editable-field
   "Widget type that maps to a `tramp-file-name' struct.
 
 Widget's internal value (what's shown to user) is a string representing
@@ -157,9 +157,10 @@ a TRAMP prefix (e.g. '/toolbox:Fedora:'. Completion and validation for
 TRAMP prefixes is provided.
 
 Widget's external value (what's stored in the variable of type
-`runbox-tramp-prefix') is a `tramp-prefix-name' struct."
-  :tag "TRAMP Prefix."
-  ;; :validate #'runbox-tramp-prefix--validate
+`runbox-tramp-prefix') is a `tramp-file-name' struct."
+  :tag "TRAMP Prefix"
+  :value nil
+  :format "%{%t%}: %v"
   :completions-function #'runbox-tramp-prefix--capf
   :prompt-value #'runbox-tramp-prefix--prompt
   :action #'runbox-tramp-prefix--action
