@@ -27,7 +27,7 @@ Running binaries in containers is useful for users of immutable distros (e.g. Fe
 Emacs provides TRAMP out-of-the-box, an incredibly versatile facility for transparently accessing remote environments including containers. However, its usage semantics fall short here: container files are treated as distinct from their host counterparts despite being the same file, forcing you to switch buffers or jump between =/foo.c= and =/toolbox:MyToolbox:/foo.c=. Also, executable access is all-or-nothing, when visiting a container's buffers, every needed tool must be installed there
 
 
-* Installation
+** Installation
 
 To install the package, 
 
@@ -37,8 +37,8 @@ To install the package,
 
 Emacs 30.1 or later is required.
 
-* Usage
-** Setting the environment
+** Usage
+*** Setting the environment
 :PROPERTIES:
 :id:       setting-environment
 :END:
@@ -74,7 +74,7 @@ When setting the environment ensure that your TRAMP method of choice is enabled.
 When =runbox-environment= is correctly set and =default-directory= points to a valid path, an indicator in the mode-line is shown and runbox commands can be used. One such example is =runbox-shell= which runs =shell= in the context of the specified environment. Other commands are listed in [[id:runbox-commands][Runbox dispatcher commands/functions]].
 
 
-** Defining a leader key
+*** Defining a leader key
 
 It is possible define a leader key so that any key sequence issued right after will spawn its associated runbox equivalent command, if any. To do so, bind the desired key-sequence for the leader key to =runbox-any-command=.
 
@@ -94,7 +94,7 @@ With the above example, issuing =C-z C-x t= will invoke the =runbox-shell= comma
 
 Please note: =runbox-any-command= only works for event from the top-level command event loop: doing `C-z M-x shell` won't work as regular `shell` command will be invoked.
 
-** Enabling automatic command dispatch 
+*** Enabling automatic command dispatch 
 
 Instead of a leader key, you can modally choose to replace every issued command with their  runbox counterparts, if any:
 
@@ -112,14 +112,14 @@ Instead of a leader key, you can modally choose to replace every issued command 
 
 Just like with the leader key approach explained before, this suffers of the same shortcomings: only the command issued from top-level command loop are replaced. Typing `M-x shell` will still open a regular local shell.
 
-** Runbox dispatcher commands/functions
+*** Runbox dispatcher commands/functions
 :PROPERTIES:
 :id:       runbox-commands
 :END:
 
-* Customizing
+** Customizing
 
-** Customizing the mode-line
+*** Customizing the mode-line
 
 By default a mode-line-construct is displayed in the =mode-line-misc-info= area when Runbox commands can be executed (see [[id:setting-environment][Setting the environment]]). Such mode-line construct's format is defined by the =runbox-mode-line= variable.
 
@@ -131,7 +131,7 @@ By default a mode-line-construct is displayed in the =mode-line-misc-info= area 
 This construct has many nested constructs that allow for granular customization. Refer to its docstring.
 
 
-** Labeling Runbox environments
+*** Labeling Runbox environments
 
 By default, the mode-line shows the currently set =runbox-environment=. As =runbox-environment= holds a =tramp-file-name= struct, evaluating a human readable string for it is necessary.
 
@@ -151,7 +151,7 @@ By default, the mode-line shows the currently set =runbox-environment=. As =runb
   Like =runbox-environment-label=, but result is cached by =environment='s identity. Useful for hot loops and mode line rendering.
 
 
-** =Runbox-environment= as a safe file-local variable
+*** =Runbox-environment= as a safe file-local variable
 :PROPERTIES:
 :id:       environment-safety
 :END:
@@ -171,7 +171,7 @@ By default =runbox-environment= value is safe if it is nil, if it has a safe met
 + Function: =runbox-safe-environment-p environment=
   Returns non-nil if =environment= is safe if set in a file-local variable.
 
-* Hacking
+** Hacking
 
 It is possible to define new runbox dispatcher commands, although a stable API for it is not yet defined. Refer to the source code, as it is thoroughly documented.
 
