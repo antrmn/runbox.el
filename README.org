@@ -153,7 +153,7 @@ By default, the mode-line shows the currently set =runbox-environment=. As =runb
 
 
 
-#+vindex runbox-environment-label-formatters
+#+vindex: runbox-environment-label-formatters
 + User-option: =runbox-environment-label-formatters= ::
   Alist of =(PREDICATE-FN . FORMATTER-FN)=. Both are functions of one argument, a =tramp-file-name= vector.  The first entry whose =PREDICATE-FN= returns non-nil has its =FORMATTER-FN= called to produce the label.
 
@@ -178,17 +178,17 @@ By default, the mode-line shows the currently set =runbox-environment=. As =runb
 By default =runbox-environment= value is safe if it is nil, if it has a safe method according to =runbox-safe-methods= or if it is a safe =tramp-file-name= according to =runbox-environment-p-functions=.
 
 
-#+vindex runbox-safe-methods
+#+vindex: runbox-safe-methods
 + User option: =runbox-safe-methods= ='("toolbox" "distrobox")= ::
   A list of string with TRAMP methods deemed safe if set as file-local.
 
 
-#+vindex runbox-safe-environment-p-functions
+#+vindex: runbox-safe-environment-p-functions
 + User option: =runbox-safe-environment-p-functions= ::
   A list of 1-arg functions that take a =tramp-file-name= struct as a parameter and return non-nil if it is safe if set in a file-local variable.
 
 
-#+findex runbox-environment-safe-p
+#+findex: runbox-environment-safe-p
 + Function: =runbox-safe-environment-p environment=
   Returns non-nil if =environment= is safe if set in a file-local variable.
 
