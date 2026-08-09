@@ -501,7 +501,6 @@ local path.
 
 FN is called with `default-directory' let-bound as
 `runbox-environment''s TRAMP prefix prepended.  ARGS are passed to FN."
-  (message "default-dir: %S\n env: %S\n fn: %S\n" default-directory environment fn)
   (when (file-remote-p default-directory)
     (warn (format "`default-directory' should be local: %S" default-directory)))
   (let* ((non-essential nil)
