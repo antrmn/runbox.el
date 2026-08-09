@@ -185,7 +185,8 @@ Used by `runbox-auto-mode' and `global-runbox-auto-mode'."
   ;; transient.  Advising may be needed. I refrain from doing so for now.  What
   ;; can be done: the user may mark the command dispatcher as a runbox command
   ;; and provide some wrapper for it.
-  (when-let* ((new-cmd (function-get this-command 'runbox-wrapped-by)))
+  (when-let* ((_ (null (runbox-invalid-p)))
+              (new-cmd (function-get this-command 'runbox-wrapped-by)))
     (setq this-command new-cmd)))
 
 (define-minor-mode runbox-auto-mode
