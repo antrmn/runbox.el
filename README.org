@@ -55,6 +55,7 @@ To use runbox, =runbox-environment= must be set and =default-directory= (current
   It can be set interactively with a string provided input through /Customize/ facilties:
     + =customize-set-value= to set it buffer-locally
     + =customize-set-variable= to set it globally
+        - =customize-variable= to persist it
     + =customize-dirlocals= or =project-customize-dirlocals= to set it scoped to a directory.
         - May be unsafe as a file-local variable. See section "[[id:environment-safety][Runbox-environment as a safe file-local variable]]".
 
@@ -121,7 +122,9 @@ Just like with the leader key approach explained before, this suffers of the sam
 + Command: =runbox-eglot= ::
 + Function: =runbox-eglot-ensure= :: 
 + Command: =runbox-compile= :: 
-+ Command: =runbox-project-compile= :: 
++ Command: =runbox-project-compile= ::
++ Command: =runbox-recompile= :: 
++ Command: =runbox-project-recompile= :: 
 + Command: =runbox-shell= :: 
 + Command: =runbox-project-shell= :: 
 + Command: =runbox-shell-command= :: 
