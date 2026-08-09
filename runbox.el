@@ -107,6 +107,7 @@ commands: `customize-variable', `customize-set-value' (to set locally),
 `customize-set-variable', `customize-dirlocals'."
   :type '(choice (const :tag "None" nil) runbox-tramp-prefix)
   :safe #'runbox-safe-environment-p
+  :require 'runbox
   :local t)
 
 ;;; Runbox bind mount definition
@@ -500,6 +501,7 @@ local path.
 
 FN is called with `default-directory' let-bound as
 `runbox-environment''s TRAMP prefix prepended.  ARGS are passed to FN."
+  (message "default-dir: %S\n env: %S\n fn: %S\n" default-directory environment fn)
   (when (file-remote-p default-directory)
     (warn (format "`default-directory' should be local: %S" default-directory)))
   (let* ((non-essential nil)
@@ -523,7 +525,8 @@ Otherwise FN is called directly.  ENV, FN and ARGS are passed to
 
 Internal function."
   (if (eq ctx runbox--ctx-token)
-      (apply #'runbox-funcall env fn args)
+      (let ((runbox--ctx-token nil))
+        (apply #'runbox-funcall env fn args))
     (apply fn args)))
 
 (defmacro runbox-with-routed (functions &rest body)
