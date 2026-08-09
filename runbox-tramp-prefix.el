@@ -74,7 +74,6 @@ ACTIONs are delegated to `complete-with-action' over the candidate list."
                              pred))))
 
 ;;todo add runbox-tramp-prefix-cape and runbox-tramp-prefix-read(from minibuffer)
-
 (defun runbox-read-tramp-prefix (&optional prompt default no-default)
   "Read a TRAMP prefix from the minibuffer.
 
@@ -101,7 +100,7 @@ the default value unless NO-DEFAULT is non-nil."
 
 If non valid, widget W with a set `:error' parameter is returned, nil otherwise."
   (let ((v (widget-value w)))
-    (if (tramp-tramp-file-p v)
+    (if (tramp-file-name-p v)
         nil
       (widget-put w :error
                   (format "Not a valid TRAMP prefix: %S" v))
@@ -142,7 +141,8 @@ Passes PROMPT, DEFAULT, NO-DEFAULT."
   (if (tramp-tramp-file-p displayed-val)
       (let ((vec (tramp-dissect-file-name displayed-val)))
         ;; strip localname as it is ignored anyway
-        (setf (tramp-file-name-localname vec) nil))
+        (setf (tramp-file-name-localname vec) nil)
+        vec)
     displayed-val))
 
 (defun runbox-tramp-prefix--match (_widget val)
